@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../../assets/styles.css">
+    <link rel="stylesheet" href="../assets/styles.css">
     <title>Register</title>
 </head>
 <body>
@@ -41,14 +41,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <h1>Register</h1>
 </header>
 <main>
-    <form action="register.php" method="POST">
+    <form action="register.php" method="POST" enctype="multipart/form-data">
         <label for="username">Username:</label>
         <input type="text" name="username" id="username" required>
         <label for="password">Password:</label>
         <input type="password" name="password" id="password" required>
+        <label for="avatar">Avatar:</label> 
+        <input type="file" name="avatar" id="avatar" required>
         <button type="submit">Register</button>
+        <p><a href="index.php" class="return-button">Return to Home</a></p>
     </form>
-    <p><a href="index.php">Return to Home</a></p>
 </main>
 <?php include 'footer.php'; ?>
 </body>

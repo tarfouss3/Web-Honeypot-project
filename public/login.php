@@ -62,8 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <?php if ($error_message): ?>
             <p style="color: red;"><?php echo $error_message; ?></p>
         <?php endif; ?>
+        <p><a href="index.php" class="return-button">Return to Home</a></p>
     </form>
-    <p><a href="index.php">Return to Home</a></p>
 </main>
 <?php include 'footer.php'; ?>
 </body>
