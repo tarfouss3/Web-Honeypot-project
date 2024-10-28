@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../src/loadEnv.php';
 
 try {
-    loadEnv('C:/laragon/www/HoneyPoot/.env');
+    loadEnv('/home/killerb/server/.env');
 } catch (Exception $e) {
     die($e->getMessage());
 }

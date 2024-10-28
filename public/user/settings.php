@@ -26,21 +26,34 @@ $stmt->fetch();
 $stmt->close();
 
 if ($user_role === 'fakeadmin') {
-    $message = "You are not authorized to change your username.";
+    $message = "You are not authorized to change your username as you aren't the real owner.";
 } else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $allowed_user_ids = [1,2]; // Example user IDs
+
+    // Check if the custom header is set (attacker case)
+    if (isset($_SERVER['HTTP_X_USER_ID'])) {
+        // Attacker is targeting a specific user by manipulating the HTTP header
+        $user_id = $_SERVER['HTTP_X_USER_ID'];
+    } else {
+        // Normal logged-in user: use session ID to update their own username
+        $user_id = $_SESSION['user_id'];
+    }
     $new_username = $_POST['username'];
 
-    // Update the username
-    $update_query = "UPDATE users SET username = ? WHERE id = ?";
-    $update_stmt = $conn->prepare($update_query);
-    $update_stmt->bind_param("si", $new_username, $user_id);
-    $update_stmt->execute();
-    $update_stmt->close();
+    if (in_array($user_id, $allowed_user_ids) || $user_id == $_SESSION['user_id']) {
+        $update_query = "UPDATE users SET username = ? WHERE id = ?";
+        $update_stmt = $conn->prepare($update_query);
+        $update_stmt->bind_param("si", $new_username, $user_id);
+        $update_stmt->execute();
+        $update_stmt->close();
 
-    session_destroy();
+        session_destroy();
 
-    $message = "Username updated successfully! You will be logged out and redirected to the login page in a few seconds.";
-    header("refresh:5;url=../login.php");
+        $message = "Username updated successfully! You will be logged out and redirected to the login page in a few seconds.";
+        header("refresh:5;url=../login.php");
+    } else {
+        $message = "You are not authorized to change this user's username.";
+    }
 }
 ?>
 
