@@ -8,23 +8,40 @@ if (!isset($conn)) {
 }
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_POST['username'];
-    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
-    $avatar = $_FILES['avatar']['name'];
-    $target = '../assets/' . basename($avatar);
-    $imageFileType = mime_content_type($_FILES['avatar']['tmp_name']);
-    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    $password = $_POST['password'];
 
-    if (in_array($imageFileType, $allowedTypes)) {
-        if (move_uploaded_file($_FILES['avatar']['tmp_name'], $target)) {
-            $stmt = $conn->prepare("INSERT INTO users (username, password, avatar) VALUES (?, ?, ?)");
-            $stmt->bind_param("sss", $username, $password, $avatar);
-            $stmt->execute();
-            header('Location: login.php');
+    if (empty($username) || empty($password)) {
+        $error_message = "Username and password are required.";
+    } elseif (preg_match('/\s/', $username)) {
+        $error_message = "Username cannot contain spaces.";
+    } elseif (!empty($_FILES['avatar']['tmp_name'])) {
+        $avatar = $_FILES['avatar']['name'];
+        $target_dir = '../assets/avatars/';
+        if (!is_dir($target_dir)) {
+            mkdir($target_dir, 0777, true);
+        }
+        $imageFileType = mime_content_type($_FILES['avatar']['tmp_name']);
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+
+        if (in_array($imageFileType, $allowedTypes)) {
+            // Generate a unique name for the avatar
+            $avatar = uniqid() . '-' . basename($avatar);
+            $target = $target_dir . $avatar;
+
+            if (move_uploaded_file($_FILES['avatar']['tmp_name'], $target)) {
+                $password_hashed = password_hash($password, PASSWORD_BCRYPT);
+                $stmt = $conn->prepare("INSERT INTO users (username, password, avatar) VALUES (?, ?, ?)");
+                $stmt->bind_param("sss", $username, $password_hashed, $avatar);
+                $stmt->execute();
+                header('Location: login.php');
+            } else {
+                $error_message = "Failed to upload avatar.";
+            }
         } else {
-            $error_message = "Failed to upload avatar.";
+            $error_message = "Please upload a valid image file (JPEG, PNG, GIF).";
         }
     } else {
-        $error_message = "Please upload a valid image file (JPEG, PNG, GIF).";
+        $error_message = "Avatar is required.";
     }
 }
 ?>
@@ -46,9 +63,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <input type="text" name="username" id="username" required>
         <label for="password">Password:</label>
         <input type="password" name="password" id="password" required>
-        <label for="avatar">Avatar:</label> 
+        <label for="avatar">Avatar:</label>
         <input type="file" name="avatar" id="avatar" required>
         <button type="submit">Register</button>
+        <?php if ($error_message): ?>
+            <p style="color: red;"><?php echo htmlspecialchars($error_message); ?></p>
+        <?php endif; ?>
+        <p>Already have an account? <a href="login.php">Login</a></p>
         <p><a href="index.php" class="return-button">Return to Home</a></p>
     </form>
 </main>

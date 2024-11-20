@@ -1,10 +1,12 @@
 <?php
 require_once '../../config/db.php';
 require_once '../../src/session.php';
+$log = require_once '../../logger.php';
+
 if (!isset($conn)) {
     die("Database connection not established.");
 }
-// Check if user is logged in
+
 if (!isLoggedIn()) {
     header('Location: ../login.php');
     exit();
@@ -12,11 +14,9 @@ if (!isLoggedIn()) {
 
 $message = "";
 
-// Set the X-User-Id header internally
 $user_id = $_SESSION['user_id'];
 header("X-User-Id: $user_id");
 
-// Fetch user role
 $query = "SELECT user_role FROM users WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $user_id);
@@ -25,25 +25,35 @@ $stmt->bind_result($user_role);
 $stmt->fetch();
 $stmt->close();
 
-if ($user_role === 'fakeadmin') {
-    $message = "You are not authorized to change your username as you aren't the real owner.";
+$protected_user_ids = [14, 4];
+if ($user_role === 'SuperUser') {
+    $message = " You are a SuperUser. changing username is not possible.";
 } else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $allowed_user_ids = [1,2]; // Example user IDs
 
-    // Check if the custom header is set (attacker case)
     if (isset($_SERVER['HTTP_X_USER_ID'])) {
-        // Attacker is targeting a specific user by manipulating the HTTP header
-        $user_id = $_SERVER['HTTP_X_USER_ID'];
+        $target_user_id = $_SERVER['HTTP_X_USER_ID'];
     } else {
-        // Normal logged-in user: use session ID to update their own username
-        $user_id = $_SESSION['user_id'];
+        $target_user_id = $_SESSION['user_id'];
     }
+
     $new_username = $_POST['username'];
 
-    if (in_array($user_id, $allowed_user_ids) || $user_id == $_SESSION['user_id']) {
+    if ($target_user_id != $user_id) {
+        $log->warning('Broken Access Control Attempt', [
+            'Attacker-Account' => $_SESSION['user_id'],
+            'Target' => $target_user_id,
+            'ip' => $_SERVER['REMOTE_ADDR'],
+            'user_agent' => $_SERVER['HTTP_USER_AGENT'],
+            'request_uri' => $_SERVER['REQUEST_URI'],
+            'request_method' => $_SERVER['REQUEST_METHOD'],
+            'request_query' => $_SERVER['QUERY_STRING'],
+        ]);
+    }
+
+    if (!in_array($target_user_id, $protected_user_ids)) {
         $update_query = "UPDATE users SET username = ? WHERE id = ?";
         $update_stmt = $conn->prepare($update_query);
-        $update_stmt->bind_param("si", $new_username, $user_id);
+        $update_stmt->bind_param("si", $new_username, $target_user_id);
         $update_stmt->execute();
         $update_stmt->close();
 
@@ -52,7 +62,7 @@ if ($user_role === 'fakeadmin') {
         $message = "Username updated successfully! You will be logged out and redirected to the login page in a few seconds.";
         header("refresh:5;url=../login.php");
     } else {
-        $message = "You are not authorized to change this user's username.";
+        $message = "This user's username is not changeable.";
     }
 }
 ?>

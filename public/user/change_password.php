@@ -21,14 +21,14 @@ $stmt->bind_result($user_role);
 $stmt->fetch();
 $stmt->close();
 
-if ($user_role === 'fakeadmin') {
-    $message = "You are not authorized to change your password.";
+if ($user_role === 'SuperUser') {
+    $message = "This account is a SuperUser account. Contact the administrator to change the password manually.";
 } else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $new_password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
 
     if ($new_password === $confirm_password) {
-        $hashed_password = password_hash($new_password, PASSWORD_DEFAULT); // Hash the new password
+        $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
 
         // Update the password
         $update_query = "UPDATE users SET password = ? WHERE id = ?";

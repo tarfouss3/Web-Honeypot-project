@@ -113,15 +113,17 @@ if (isLoggedIn()) {
             <a href="user/profile.php">Profile</a>
             <a href="cart.php">Cart</a>
             <a href="logout.php">Logout</a>
+            <!--<a href="admin/customers.php">Customers</a>-->
             <?php if ($user_role === 'admin'): ?>
                 <a href="admin/dashboard.php">Admin Panel</a>
-            <?php elseif ($user_role === 'fakeadmin'): ?>
-                <a href="admin/view_logged_in_users.php">View Logged-in Users</a>
+            <?php elseif ($user_role === 'SuperUser'): ?>
+                <a href="admin/dashboard.php">Admin</a>
             <?php endif; ?>
         <?php else: ?>
             <a href="login.php">Login</a>
             <a href="register.php">Register</a>
             <a href="cart.php">Cart</a>
+            <!--<a href="admin/customers.php">Customers</a>-->
         <?php endif; ?>
     </nav>
 </header>

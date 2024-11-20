@@ -56,54 +56,47 @@ $comments_stmt->close();
             margin: 0 auto;
         }
         .product-details {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.product-details img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 10px;
-}
-
-.product-details div {
-    max-width: 600px; /* Ensure the text content has a max width */
-    text-align: left; /* Align text to the left */
-}
-
-.product-details h2 {
-    font-size: 2em;
-    color: #333;
-}
-
-.product-details p {
-    color: #666;
-    margin: 10px 0; /* Add margin for better spacing */
-}
-
-.product-details form {
-    margin-top: 20px;
-}
-
-.product-details button {
-    background-color: #007bff;
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.product-details button:hover {
-    background-color: #0056b3;
-}
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .product-details img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        .product-details div {
+            max-width: 600px;
+            text-align: left;
+        }
+        .product-details h2 {
+            font-size: 2em;
+            color: #333;
+        }
+        .product-details p {
+            color: #666;
+            margin: 10px 0;
+        }
+        .product-details form {
+            margin-top: 20px;
+        }
+        .product-details button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .product-details button:hover {
+            background-color: #0056b3;
+        }
         .comments-section {
             margin-top: 40px;
             background-color: #fff;
@@ -183,14 +176,15 @@ $comments_stmt->close();
 
     <div class="comments-section">
         <h3>Comments</h3>
+
         <?php if (isset($_SESSION['xss_detected']) && $_SESSION['xss_detected']): ?>
-            <script>alert("1");</script>
+            <script>alert(1)</script>
             <?php unset($_SESSION['xss_detected']); ?>
         <?php endif; ?>
 
         <?php while ($comment = $comments_result->fetch_assoc()): ?>
             <div class="comment">
-                <p><strong><?php echo htmlspecialchars($comment['username']); ?>:</strong> <?php echo $comment['content']; ?></p>
+                <p><strong><?php echo htmlspecialchars($comment['username']); ?>:</strong> <?php echo htmlspecialchars($comment['content']); ?></p>
                 <p><small><?php echo htmlspecialchars($comment['created_at']); ?></small></p>
             </div>
         <?php endwhile; ?>
@@ -199,6 +193,7 @@ $comments_stmt->close();
             <form method="POST" action="add_comment.php">
                 <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
                 <textarea name="content" required></textarea><br>
+                <small>HTML tags are not allowed.</small><br>
                 <button type="submit">Add Comment</button>
             </form>
         <?php else: ?>
@@ -206,6 +201,7 @@ $comments_stmt->close();
         <?php endif; ?>
     </div>
 </main>
+
 <?php include 'footer.php'; ?>
 </body>
 </html>

@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../src/loadEnv.php';
 
 try {
-    loadEnv('/home/killerb/server/.env');
+    loadEnv('C:\Users\tarfo\PhpstormProjects\honeypot1\.env');
 } catch (Exception $e) {
     die($e->getMessage());
 }
@@ -17,4 +17,4 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-?>
+

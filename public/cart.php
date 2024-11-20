@@ -1,9 +1,14 @@
 <?php
-session_start();
 require_once '../config/db.php';
-
+session_start();
+if (!isset($conn)) {
+    die("Database connection not established.");
+}
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $product_id = $_POST['product_id'];
+    if (!isset($_SESSION['cart'])) {
+        $_SESSION['cart'] = [];
+    }
     $_SESSION['cart'][] = $product_id;
 }
 

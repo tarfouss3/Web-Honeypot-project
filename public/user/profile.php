@@ -1,6 +1,9 @@
 <?php
 require_once '../../config/db.php';
 require_once '../../src/session.php';
+$log = require_once '../../logger.php';
+
+
 if (!isset($conn)) {
     die("Database connection not established.");
 }
@@ -10,7 +13,18 @@ if (!isLoggedIn()) {
 }
 
 $user_id = isset($_GET['id']) ? intval($_GET['id']) : $_SESSION['user_id'];
-
+if ($user_id !== $_SESSION['user_id']) {
+    $log->warning('SQLi Honeypot By', [
+        'Attacker-Account' => $_SESSION['user_id'],
+        'Target' => $user_id,
+        'payload' => $_SERVER['QUERY_STRING'],
+        'ip' => $_SERVER['REMOTE_ADDR'],
+        'user_agent' => $_SERVER['HTTP_USER_AGENT'],
+        'request_uri' => $_SERVER['REQUEST_URI'],
+        'request_method' => $_SERVER['REQUEST_METHOD'],
+        'request_query' => $_SERVER['QUERY_STRING'],
+    ]);
+}
 $stmt = $conn->prepare("SELECT username, avatar FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -84,7 +98,7 @@ $stmt->close();
 </header>
 <main>
     <p class="profile-avatar">
-        <img src="../../assets/<?php echo htmlspecialchars($row['avatar']); ?>" alt="User Avatar" width="150" height="150">
+        <img src="../../assets/avatars/<?php echo htmlspecialchars($row['avatar']); ?>" alt="User Avatar" width="150" height="150">
         <?php if ($user_id == 4): ?>
             <!-- I identify as a JPG image; first, you must repair me to truly see who I am. -->
         <?php endif; ?>

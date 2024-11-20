@@ -1,4 +1,3 @@
-<!-- footer.php -->
 <footer>
     <div class="footer-content">
         <p>&copy; 2023 iphonedealer Company. All rights reserved.</p>

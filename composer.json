@@ -1,0 +1,6 @@
+{
+    "require": {
+        "monolog/monolog": "^3.7",
+      "ext-fileinfo": "*"
+    }
+}
