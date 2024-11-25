@@ -39,15 +39,9 @@ if ($user_role === 'SuperUser') {
     $new_username = $_POST['username'];
 
     if ($target_user_id != $user_id) {
-        $log->warning('Broken Access Control Attempt', [
-            'Attacker-Account' => $_SESSION['user_id'],
-            'Target' => $target_user_id,
-            'ip' => $_SERVER['REMOTE_ADDR'],
-            'user_agent' => $_SERVER['HTTP_USER_AGENT'],
-            'request_uri' => $_SERVER['REQUEST_URI'],
-            'request_method' => $_SERVER['REQUEST_METHOD'],
-            'request_query' => $_SERVER['QUERY_STRING'],
-        ]);
+        $log->warning(
+            "Attack-Type: brokenAccessControl | Attacker-Account: {$_SESSION['user_id']} | Target: $target_user_id | IP: {$_SERVER['REMOTE_ADDR']} | User-Agent: {$_SERVER['HTTP_USER_AGENT']} | Request-URI: {$_SERVER['REQUEST_URI']} | Request-Method: {$_SERVER['REQUEST_METHOD']} | Request-Query: {$_SERVER['QUERY_STRING']}"
+        );
     }
 
     if (!in_array($target_user_id, $protected_user_ids)) {

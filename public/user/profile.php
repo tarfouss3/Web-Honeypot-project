@@ -13,17 +13,12 @@ if (!isLoggedIn()) {
 }
 
 $user_id = isset($_GET['id']) ? intval($_GET['id']) : $_SESSION['user_id'];
+$content = $_SERVER['QUERY_STRING'];
 if ($user_id !== $_SESSION['user_id']) {
-    $log->warning('SQLi Honeypot By', [
-        'Attacker-Account' => $_SESSION['user_id'],
-        'Target' => $user_id,
-        'payload' => $_SERVER['QUERY_STRING'],
-        'ip' => $_SERVER['REMOTE_ADDR'],
-        'user_agent' => $_SERVER['HTTP_USER_AGENT'],
-        'request_uri' => $_SERVER['REQUEST_URI'],
-        'request_method' => $_SERVER['REQUEST_METHOD'],
-        'request_query' => $_SERVER['QUERY_STRING'],
-    ]);
+    $log->warning(
+    "Attack-Type: SQLi | Attacker-Account: {$_SESSION['user_id']} | Target: $user_id | Payload: $content | IP: {$_SERVER['REMOTE_ADDR']} | User-Agent: {$_SERVER['HTTP_USER_AGENT']} | Request-URI: {$_SERVER['REQUEST_URI']} | Request-Method: {$_SERVER['REQUEST_METHOD']} | Request-Query: {$_SERVER['QUERY_STRING']}"
+);
+
 }
 $stmt = $conn->prepare("SELECT username, avatar FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);

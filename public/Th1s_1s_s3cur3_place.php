@@ -1,12 +1,9 @@
 <?php
 $log = require_once '../logger.php';
 
-$log->warning('The hidden Volt has been accessed!!', [
-    'ip' => $_SERVER['REMOTE_ADDR'],
-    'user_agent' => $_SERVER['HTTP_USER_AGENT'],
-    'request_method' => $_SERVER['REQUEST_METHOD'],
-    'request_query' => $_SERVER['QUERY_STRING'],
-]);
+$log->warning(
+    "Attack-Type: hiddenVoltAccessed | Attacker-Account: {$_SESSION['username']} | IP: {$_SERVER['REMOTE_ADDR']} | User-Agent: {$_SERVER['HTTP_USER_AGENT']} | Request-URI: {$_SERVER['REQUEST_URI']} | Request-Method: {$_SERVER['REQUEST_METHOD']} | Request-Query: {$_SERVER['QUERY_STRING']}"
+);
 
 $secret = 78;
 $entered_key = isset($_GET['key']) ? intval($_GET['key']) : null;

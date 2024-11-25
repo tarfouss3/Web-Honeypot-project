@@ -51,11 +51,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             exit();
         } else {
             $error_message = "Invalid username or password.";
-            $log->info("User: $username | Status: failure (invalid password) | IP: {$_SERVER['REMOTE_ADDR']} | Time: " . date('Y-m-d H:i:s'));
+            $log->info("User: $username | Status: failure | IP: {$_SERVER['REMOTE_ADDR']} | Time: " . date('Y-m-d H:i:s'));
         }
     } else {
         $error_message = "Invalid username or password.";
-        $log->info("User: $username | Status: failure (invalid username) | IP: {$_SERVER['REMOTE_ADDR']} | Time: " . date('Y-m-d H:i:s'));
+        $log->info("User: $username | Status: failure | IP: {$_SERVER['REMOTE_ADDR']} | Time: " . date('Y-m-d H:i:s'));
     }
 
     $stmt->close();
@@ -90,3 +90,4 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <?php include 'footer.php'; ?>
 </body>
 </html>
+5B5B

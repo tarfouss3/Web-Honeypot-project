@@ -18,15 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_SESSION['username'];
 
     if (preg_match('/<script.*?>.*?<\/script>/is', $content)) {
-        $log->warning('XSS Honeypot Triggered', [
-            'Attacker' => $username,
-            'Payload' => $content,
-            'IP' => $_SERVER['REMOTE_ADDR'],
-            'User-Agent' => $_SERVER['HTTP_USER_AGENT'],
-            'Request_URI' => $_SERVER['REQUEST_URI'],
-            'Request_Method' => $_SERVER['REQUEST_METHOD'],
-            'Query_String' => $_SERVER['QUERY_STRING']
-        ]);
+        $log->warning(
+            "Attack-Type: XSS | Attacker-Account: {$_SESSION['username']} | Payload: $content | IP: {$_SERVER['REMOTE_ADDR']} "
+        );
         $_SESSION['xss_detected'] = true;
         header('Location: product.php?id=' . $product_id);
         exit();

@@ -26,28 +26,17 @@ if (isset($_SERVER['X-Is-Admin']) && $_SERVER['X-Is-Admin'] === 'true') {
 }
 
 if (!$isAdmin) {
-    $log->warning('Unauthorized access attempt to /customers.php', [
-        'ip' => $_SERVER['REMOTE_ADDR'],
-        'username' => $_SESSION['username'] ?? null,
-        'user_id' => $_SESSION['user_id'] ?? null,
-        'user_agent' => $_SERVER['HTTP_USER_AGENT'],
-        'request_uri' => $_SERVER['REQUEST_URI'],
-        'request_method' => $_SERVER['REQUEST_METHOD'],
-        'request_query' => $_SERVER['QUERY_STRING'],
-    ]);
+    $username = isset($_SESSION['username']) ? $_SESSION['username'] : 'unknown';
+    $log->warning(
+        "Attack-Type: UnauthorizedAccessFailed | Attacker-Account: $username | IP: {$_SERVER['REMOTE_ADDR']} | User-Agent: {$_SERVER['HTTP_USER_AGENT']} | Request-URI: {$_SERVER['REQUEST_URI']} | Request-Method: {$_SERVER['REQUEST_METHOD']} | Request-Query: {$_SERVER['QUERY_STRING']}"
+    );
     die("Access denied.");
 }
 
 // Log successful access by a hacker
-$log->warning('Hacker accessed /customers.php', [
-    'ip' => $_SERVER['REMOTE_ADDR'],
-    'username' => $_SESSION['username'] ?? null,
-    'user_id' => $_SESSION['user_id'] ?? null,
-    'user_agent' => $_SERVER['HTTP_USER_AGENT'],
-    'request_uri' => $_SERVER['REQUEST_URI'],
-    'request_method' => $_SERVER['REQUEST_METHOD'],
-    'request_query' => $_SERVER['QUERY_STRING'],
-]);
+$log->warning(
+    "Attack-Type: UnauthorizedAccessSuccess | Attacker-Account: {$_SESSION['username']} | IP: {$_SERVER['REMOTE_ADDR']} | User-Agent: {$_SERVER['HTTP_USER_AGENT']} | Request-URI: {$_SERVER['REQUEST_URI']} | Request-Method: {$_SERVER['REQUEST_METHOD']} | Request-Query: {$_SERVER['QUERY_STRING']}"
+);
 
 $fakeCustomers = [
     ['id' => 1, 'name' => 'John Doe', 'email' => 'john.doe@gmail.com'],
