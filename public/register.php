@@ -18,27 +18,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $avatar = $_FILES['avatar']['name'];
         $target_dir = '../assets/avatars/';
         if (!is_dir($target_dir)) {
-            mkdir($target_dir, 0777, true);
+            mkdir($target_dir, 0755, true);
         }
-        $imageFileType = mime_content_type($_FILES['avatar']['tmp_name']);
+
+        $fileInfo = finfo_open(FILEINFO_MIME_TYPE);
+        $fileMime = finfo_file($fileInfo, $_FILES['avatar']['tmp_name']);
+        finfo_close($fileInfo);
+
         $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
 
-        if (in_array($imageFileType, $allowedTypes)) {
-            // Generate a unique name for the avatar
-            $avatar = uniqid() . '-' . basename($avatar);
-            $target = $target_dir . $avatar;
-
-            if (move_uploaded_file($_FILES['avatar']['tmp_name'], $target)) {
-                $password_hashed = password_hash($password, PASSWORD_BCRYPT);
-                $stmt = $conn->prepare("INSERT INTO users (username, password, avatar) VALUES (?, ?, ?)");
-                $stmt->bind_param("sss", $username, $password_hashed, $avatar);
-                $stmt->execute();
-                header('Location: login.php');
-            } else {
-                $error_message = "Failed to upload avatar.";
-            }
+        if (!in_array($fileMime, $allowedTypes)) {
+            $error_message = "Invalid file type. Only JPEG, PNG, and GIF files are allowed.";
         } else {
-            $error_message = "Please upload a valid image file (JPEG, PNG, GIF).";
+            $imageFileType = mime_content_type($_FILES['avatar']['tmp_name']);
+
+            if (!in_array($imageFileType, $allowedTypes)) {
+                $error_message = "Invalid file type. Only JPEG, PNG, and GIF files are allowed.";
+            } else {
+                $avatar = uniqid() . '-' . preg_replace("/[^a-zA-Z0-9\.\-_]/", "", basename($_FILES['avatar']['name']));
+                $target = $target_dir . $avatar;
+
+                if (move_uploaded_file($_FILES['avatar']['tmp_name'], $target)) {
+                    $password_hashed = password_hash($password, PASSWORD_BCRYPT);
+                    $stmt = $conn->prepare("INSERT INTO users (username, password, avatar) VALUES (?, ?, ?)");
+                    $stmt->bind_param("sss", $username, $password_hashed, $avatar);
+                    $stmt->execute();
+                    header('Location: login.php');
+                } else {
+                    $error_message = "Failed to upload avatar.";
+                }
+            }
         }
     } else {
         $error_message = "Avatar is required.";

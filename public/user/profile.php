@@ -12,11 +12,18 @@ if (!isLoggedIn()) {
     exit();
 }
 
+$ip = $_SERVER['REMOTE_ADDR'];
+if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+    $forwardedIps = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+    $ip = trim($forwardedIps[0]); // Use the first IP (original client)
+}
+
+
 $user_id = isset($_GET['id']) ? intval($_GET['id']) : $_SESSION['user_id'];
 $content = $_SERVER['QUERY_STRING'];
 if ($user_id !== $_SESSION['user_id']) {
     $log->warning(
-    "Attack-Type: SQLi | Attacker-Account: {$_SESSION['user_id']} | Target: $user_id | Payload: $content | IP: {$_SERVER['REMOTE_ADDR']} | User-Agent: {$_SERVER['HTTP_USER_AGENT']} | Request-URI: {$_SERVER['REQUEST_URI']} | Request-Method: {$_SERVER['REQUEST_METHOD']} | Request-Query: {$_SERVER['QUERY_STRING']}"
+    "Attack-Type: SQLi | Attacker-Account: {$_SESSION['user_id']} | Target: $user_id | Payload: $content | IP: $ip | User-Agent: {$_SERVER['HTTP_USER_AGENT']} | Request-URI: {$_SERVER['REQUEST_URI']} | Request-Method: {$_SERVER['REQUEST_METHOD']} | Request-Query: {$_SERVER['QUERY_STRING']}"
 );
 
 }
