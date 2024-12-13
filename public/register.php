@@ -6,51 +6,71 @@ $error_message = '';
 if (!isset($conn)) {
     die("Database connection not established.");
 }
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username = $_POST['username'];
+    $username = trim($_POST['username']);
     $password = $_POST['password'];
 
     if (empty($username) || empty($password)) {
         $error_message = "Username and password are required.";
     } elseif (preg_match('/\s/', $username)) {
         $error_message = "Username cannot contain spaces.";
-    } elseif (!empty($_FILES['avatar']['tmp_name'])) {
-        $avatar = $_FILES['avatar']['name'];
-        $target_dir = '../assets/avatars/';
-        if (!is_dir($target_dir)) {
-            mkdir($target_dir, 0755, true);
-        }
+    } elseif (!preg_match('/^[a-zA-Z0-9_]+$/', $username) || preg_match('/[\'";\\]/', $username)) {
+        $error_message = "Invalid username format.";
+    } else {
+        $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $stmt->store_result();
 
-        $fileInfo = finfo_open(FILEINFO_MIME_TYPE);
-        $fileMime = finfo_file($fileInfo, $_FILES['avatar']['tmp_name']);
-        finfo_close($fileInfo);
-
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-
-        if (!in_array($fileMime, $allowedTypes)) {
-            $error_message = "Invalid file type. Only JPEG, PNG, and GIF files are allowed.";
+        if ($stmt->num_rows > 0) {
+            $error_message = "Username already exists.";
         } else {
-            $imageFileType = mime_content_type($_FILES['avatar']['tmp_name']);
-
-            if (!in_array($imageFileType, $allowedTypes)) {
-                $error_message = "Invalid file type. Only JPEG, PNG, and GIF files are allowed.";
-            } else {
-                $avatar = uniqid() . '-' . preg_replace("/[^a-zA-Z0-9\.\-_]/", "", basename($_FILES['avatar']['name']));
-                $target = $target_dir . $avatar;
-
-                if (move_uploaded_file($_FILES['avatar']['tmp_name'], $target)) {
-                    $password_hashed = password_hash($password, PASSWORD_BCRYPT);
-                    $stmt = $conn->prepare("INSERT INTO users (username, password, avatar) VALUES (?, ?, ?)");
-                    $stmt->bind_param("sss", $username, $password_hashed, $avatar);
-                    $stmt->execute();
-                    header('Location: login.php');
-                } else {
-                    $error_message = "Failed to upload avatar.";
+            if (!empty($_FILES['avatar']['tmp_name'])) {
+                $avatar = $_FILES['avatar']['name'];
+                $target_dir = '../assets/avatars/';
+                if (!is_dir($target_dir)) {
+                    mkdir($target_dir, 0755, true);
                 }
+
+                $fileInfo = finfo_open(FILEINFO_MIME_TYPE);
+                $fileMime = finfo_file($fileInfo, $_FILES['avatar']['tmp_name']);
+                finfo_close($fileInfo);
+
+                $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+
+                if (!in_array($fileMime, $allowedTypes)) {
+                    $error_message = "Invalid file type.";
+                } else {
+                    $fileExtension = pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION);
+                    if (!in_array(strtolower($fileExtension), ['jpg', 'jpeg', 'png', 'gif'])) {
+                        $error_message = "Invalid file extension.";
+                    } else {
+                        $avatar = uniqid() . '-' . preg_replace("/[^a-zA-Z0-9\.\-_]/", "", basename($_FILES['avatar']['name']));
+                        $target = $target_dir . $avatar;
+
+                        if (move_uploaded_file($_FILES['avatar']['tmp_name'], $target)) {
+                            $password_hashed = password_hash($password, PASSWORD_BCRYPT);
+                            $userRole = 'user';
+                            $isActive = 1;
+                            $status = 0;
+                            $stmt = $conn->prepare("INSERT INTO users (username, password, avatar, is_active, user_role, status) VALUES (?, ?, ?, ?, ?, ?)");
+                            $stmt->bind_param("sssisi", $username, $password_hashed, $avatar, $isActive, $userRole, $status);
+                            if ($stmt->execute()) {
+                                header('Location: login.php');
+                                exit;
+                            } else {
+                                $error_message = "Failed to register user.";
+                            }
+                        } else {
+                            $error_message = "Failed to upload avatar.";
+                        }
+                    }
+                }
+            } else {
+                $error_message = "Avatar is required.";
             }
         }
-    } else {
-        $error_message = "Avatar is required.";
     }
 }
 ?>
@@ -76,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <input type="file" name="avatar" id="avatar" required>
         <button type="submit">Register</button>
         <?php if ($error_message): ?>
-            <p style="color: red;"><?php echo htmlspecialchars($error_message); ?></p>
+            <p style="color: red;"><?php echo htmlspecialchars($error_message, ENT_QUOTES, 'UTF-8'); ?></p>
         <?php endif; ?>
         <p>Already have an account? <a href="login.php">Login</a></p>
         <p><a href="index.php" class="return-button">Return to Home</a></p>
@@ -85,3 +105,4 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <?php include 'footer.php'; ?>
 </body>
 </html>
+
