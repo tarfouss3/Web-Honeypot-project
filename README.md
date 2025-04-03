@@ -1,4 +1,5 @@
 # Project Documentation
+This is a WEB honeypot project that can be linked with elastic search directly and receive the logs under auth.log  and vuls.log 
 
 ## Overview of Honeypots with Solution
 
